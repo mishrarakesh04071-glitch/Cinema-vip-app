@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cinema VIP</title>
+<style>
+body{margin:0;background:#101010;color:white;font-family:Arial}
+header{background:#b00020;padding:20px;text-align:center;font-size:25px;font-weight:bold}
+main{padding:20px}
+input,button{width:100%;padding:13px;margin:8px 0;box-sizing:border-box;border:0;border-radius:6px}
+button{background:#e50914;color:white;font-weight:bold}
+.card{background:#222;padding:15px;margin:12px 0;border-radius:10px}
+h2{color:#ff3344}
+</style>
+</head>
+<body>
+<header>🎬 CINEMA VIP</header>
+<main>
+<h2>Welcome to Cinema VIP</h2>
+<div class="card">
+<h3>Login / Register</h3>
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="register()">Create Account</button>
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
+<p id="status">Please login</p>
+</div>
+
+<div class="card">
+<h2>🎥 Movies</h2>
+<div id="movies">Login to view movies.</div>
+</div>
+
+<div class="card">
+<h2>⭐ VIP Membership</h2>
+<input id="name" placeholder="Your name">
+<input id="txn" placeholder="UPI Transaction ID">
+<button onclick="requestVIP()">Request VIP</button>
+<p id="vipStatus"></p>
+</div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyDYlb-Cxfuf5BPSh6mlAL3P1qtROlo1HmU",
+authDomain: "cinemavip-e28fb.firebaseapp.com",
+projectId: "cinemavip-e28fb",
+storageBucket: "cinemavip-e28fb.firebasestorage.app",
+messagingSenderId: "613777704845",
+appId: "1:613777704845:web:26f4a10d43ab0d10ca9fc4"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+function register(){
+auth.createUserWithEmailAndPassword(email.value,password.value)
+.then(()=>alert("Account created!"))
+.catch(e=>alert(e.message));
+}
+function login(){
+auth.signInWithEmailAndPassword(email.value,password.value)
+.catch(e=>alert(e.message));
+}
+function logout(){auth.signOut();}
+auth.onAuthStateChanged(async user=>{
+status.innerText=user?"Logged in: "+user.email:"Please login";
+if(user){loadMovies();}
+else{movies.innerHTML="Please login to view movies.";}
+});
+async function loadMovies(){
+const snap=await db.collection("movies").get();
+movies.innerHTML="";
+snap.forEach(doc=>{
+let m=doc.data();
+movies.innerHTML+=`<div class="card"><h3>${m.title||"Movie"}</h3>
+<img src="${m.poster||""}" style="width:100%">
+<p>${m.description||""}</p>
+<a href="${m.videoUrl||"#"}" style="color:white">▶ Watch Movie</a></div>`;
+});
+}
+async function requestVIP(){
+const user=auth.currentUser;
+if(!user){alert("Please login first");return;}
+try{
+await db.collection("vipRequests").add({
+uid:user.uid,name:document.getElementById("name").value,
+txnId:document.getElementById("txn").value,
+status:"pending",createdAt:firebase.firestore.FieldValue.serverTimestamp()
+});
+vipStatus.innerText="VIP request sent to Admin.";
+}catch(e){alert(e.message);}
+}
+</script>
+</body>
+</html>
