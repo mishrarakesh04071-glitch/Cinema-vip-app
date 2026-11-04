@@ -54,14 +54,34 @@ storageBucket: "cinemavip-e28fb.firebasestorage.app",
 messagingSenderId: "613777704845",
 appId: "1:613777704845:web:26f4a10d43ab0d10ca9fc4"
 };
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
-
 function register(){
-auth.createUserWithEmailAndPassword(email.value,password.value)
-.then(()=>alert("Account created!"))
-.catch(e=>alert(e.message));
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+
+  const userEmail = emailInput.value.trim();
+  const userPassword = passwordInput.value;
+
+  if(!userEmail || !userEmail.includes("@")){
+    alert("Sahi Email dalo");
+    return;
+  }
+
+  if(userPassword.length < 6){
+    alert("Password kam se kam 6 characters ka hona chahiye");
+    return;
+  }
+
+  auth.createUserWithEmailAndPassword(userEmail,userPassword)
+    .then(()=>alert("Account created!"))
+    .catch(e=>alert(e.message));
+}
+
+function login(){
+  const userEmail = document.getElementById("email").value.trim();
+  const userPassword = document.getElementById("password").value;
+
+  auth.signInWithEmailAndPassword(userEmail,userPassword)
+    .catch(e=>alert(e.message));
 }
 function login(){
 auth.signInWithEmailAndPassword(email.value,password.value)
